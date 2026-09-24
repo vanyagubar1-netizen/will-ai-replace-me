@@ -1,5 +1,3 @@
-import { GoogleGenAI } from '@google/genai';
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -18,18 +16,30 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Ключ GEMINI_API_KEY не найден в настройках Vercel' });
     }
 
-    const ai = new GoogleGenAI({ apiKey: apiKey });
+    // Полный точный URL-адрес для отправки запросов в Google ИИ
+    const url = "https://googleapis.com" + apiKey;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
-      contents: promptText,
-      config: {
-        responseMimeType: 'application/json'
-      }
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+          contents: [{ parts: [{ text: promptText }] }],
+          generationConfig: { 
+            responseMimeType: "application/json" 
+          }
+      })
     });
 
-    let aiText = response.text.trim();
+    if (!response.ok) {
+      return res.status(500).json({ error: 'Ошибка ответа от серверов Gemini API' });
+    }
+
+    const resData = await response.json();
+    let aiText = resData.candidates.content.parts.text.trim();
     
+    // Очистка от возможных markdown-тегов
     aiText = aiText.replace(/^```json/, '').replace(/```$/, '').trim();
 
     const data = JSON.parse(aiText);
@@ -40,3 +50,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Ошибка сервера при обработке данных' });
   }
 }
+
