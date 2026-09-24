@@ -16,7 +16,6 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Ключ GEMINI_API_KEY не найден в настройках Vercel' });
     }
 
-    // Собираем ссылку без использования ломающихся символов косой кавычки
     const url = "https://googleapis.com" + apiKey;
 
     const response = await fetch(url, {
@@ -33,9 +32,8 @@ export default async function handler(req, res) {
     }
 
     const resData = await response.json();
-    let aiText = resData.candidates[0].content.parts[0].text.trim();
+    let aiText = resData.candidates.content.parts.text.trim();
     
-    // Очистка от markdown на случай, если Gemini проигнорировал инструкцию
     aiText = aiText.replace(/^```json/, '').replace(/```$/, '').trim();
 
     const data = JSON.parse(aiText);
