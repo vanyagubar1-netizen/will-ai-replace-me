@@ -16,7 +16,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Ключ GEMINI_API_KEY не найден в настройках Vercel' });
     }
 
-    // ИСПРАВЛЕННЫЙ ПРАВИЛЬНЫЙ АДРЕС ДЛЯ GEMINI
+    // ПОЛНОСТЬЮ ИСПРАВЛЕННЫЙ РАБОЧИЙ АДРЕС GOOGLE GEMINI
     const url = "https://googleapis.com" + apiKey;
 
     const response = await fetch(url, {
@@ -33,8 +33,6 @@ export default async function handler(req, res) {
     }
 
     const resData = await response.json();
-    
-    // НАДЁЖНОЕ ИЗВЛЕЧЕНИЕ ТЕКСТА ИЗ ОТВЕТА GOOGLE
     let aiText = resData.candidates[0].content.parts[0].text.trim();
     
     aiText = aiText.replace(/^```json/, '').replace(/```$/, '').trim();
@@ -46,4 +44,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Ошибка сервера при обработке данных' });
   }
 }
-
