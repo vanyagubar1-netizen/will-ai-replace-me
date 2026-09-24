@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Will AI Replace Me?</title>
+<style>
+:root{--bg:#05060b;--card:#0d1019;--line:#252b3c;--muted:#8d96aa;--text:#f7f8ff;--a:#7c5cff;--b:#27d8ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#241b55 0,transparent 35%),var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;background-image:linear-gradient(#fff1 1px,transparent 1px),linear-gradient(90deg,#fff1 1px,transparent 1px);background-size:48px 48px;mask-image:linear-gradient(#000,transparent)}
+.wrap{width:min(1050px,92%);margin:auto;padding:55px 0 70px}.hero{text-align:center}
+.badge{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:8px 14px;color:#aeb6ca;background:#ffffff08;font-size:12px;letter-spacing:.8px}
+h1{font-size:clamp(48px,8vw,88px);line-height:.9;letter-spacing:-5px;margin:22px 0 20px}
+.grad{background:linear-gradient(90deg,#fff,#9b88ff,#52e5ff);color:transparent;background-clip:text;-webkit-background-clip:text}
+.sub{color:var(--muted);font-size:18px;margin-bottom:34px}
+.search{max-width:800px;margin:auto;display:flex;padding:9px;border:1px solid #333b50;background:#0b0e17dd;border-radius:22px;box-shadow:0 25px 80px #0008}
+input{flex:1;min-width:0;background:none;border:0;outline:0;color:white;font-size:18px;padding:16px}
+button{border:0;color:white;font-weight:800;border-radius:15px;padding:0 24px;background:linear-gradient(135deg,var(--a),var(--b));cursor:pointer;min-height:54px}
+button:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.examples{color:#687188;font-size:13px;margin-top:14px}.examples span{color:#9ca5b9;cursor:pointer}
+#loading{display:none;text-align:center;color:#aab3c6;margin:35px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#8b78ff;margin:0 3px;animation:p 1s infinite}.dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}@keyframes p{50%{transform:translateY(-7px);opacity:.5}}
+#result{display:none;margin-top:45px}.card{background:#0c0f18ed;border:1px solid var(--line);border-radius:26px;padding:28px;box-shadow:0 30px 100px #0007;backdrop-filter:blur(14px);animation:up .5s ease}@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.top{display:flex;justify-content:space-between;gap:20px;align-items:center}.job{font-size:32px;font-weight:900}.small{font-size:13px;color:var(--muted);margin-top:5px}.score{text-align:right}.num{font-size:48px;font-weight:900}.risk{font-weight:800;color:#72e4aa}
+.bar{height:13px;border-radius:99px;background:#202638;margin:24px 0;overflow:hidden}.fill{height:100%;width:0;background:linear-gradient(90deg,#38d483,#ffd166,#ff5c78);transition:1.2s}
+.timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:25px 0}.year{border:1px solid var(--line);border-radius:16px;padding:16px;background:#090c14}.year b{font-size:20px}.year p{margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.4}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.section{border:1px solid var(--line);border-radius:18px;padding:20px;background:#090c14}.section h3{margin:0 0 13px}.section ul{margin:0;padding:0;list-style:none}.section li{padding:9px 0;color:#cbd1df;border-bottom:1px solid #ffffff0a}.section li:last-child{border:0}.ai li:before{content:"⚡ ";color:#66dfff}.human li:before{content:"◆ ";color:#8f7cff}
+.skills{display:flex;flex-wrap:wrap;gap:8px}.skill{padding:8px 11px;border-radius:99px;background:#171c2a;border:1px solid #293147;color:#c9d1e3;font-size:13px}
+.note{margin-top:15px;color:#737e94;font-size:12px;line-height:1.5}.reset{margin-top:22px;background:#151a27;border:1px solid var(--line)}
+footer{text-align:center;color:#4f596d;font-size:12px;margin-top:35px}
+@media(max-width:650px){.wrap{padding-top:35px}h1{letter-spacing:-3px}.search{flex-direction:column}.top{flex-direction:column;align-items:flex-start}.score{text-align:left}.grid2,.timeline{grid-template-columns:1fr}.num{font-size:40px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section class="hero">
+<div class="badge">✦ AI CAREER ANALYZER</div>
+<h1>Will <span class="grad">AI</span><br>Replace Me?</h1>
+<div class="sub">Проверь профессию и узнай, какие задачи может изменить искусственный интеллект.</div>
+<div class="search">
+<input id="job" placeholder="Введите профессию..." autocomplete="off">
+<button onclick="analyze()">Анализировать</button>
+</div>
+<div class="examples">Например: <span onclick="tryJob('Зубной техник')">Зубной техник</span> · <span onclick="tryJob('Программист')">Программист</span> · <span onclick="tryJob('Врач')">Врач</span> · <span onclick="tryJob('Дизайнер')">Дизайнер</span></div>
+</section>
+
+<div id="loading">Анализируем профессию <span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+
+<section id="result">
+<div class="card">
+<div class="top">
+<div><div class="job" id="name"></div><div class="small">Оценка влияния автоматизации задач</div></div>
+<div class="score"><div class="num" id="pct">0%</div><div class="risk" id="risk"></div></div>
+</div>
+<div class="bar"><div class="fill" id="fill"></div></div>
+
+<div class="timeline">
+<div class="year"><b>2026</b><p id="y26"></p></div>
+<div class="year"><b>2030</b><p id="y30"></p></div>
+<div class="year"><b>2035</b><p id="y35"></p></div>
+</div>
+
+<div class="grid2">
+<div class="section ai"><h3>⚡ Что ИИ может взять на себя</h3><ul id="ai"></ul></div>
+<div class="section human"><h3>◆ Что особенно останется человеку</h3><ul id="human"></ul></div>
+</div>
+
+<div class="section" style="margin-top:14px"><h3>🧠 Навыки, которые будут полезны</h3><div class="skills" id="skills"></div></div>
+<div class="note">Это ориентировочная демонстрационная оценка, а не точный прогноз. ИИ обычно автоматизирует отдельные задачи, а не исчезновение профессии целиком. Реальный эффект зависит от специализации, страны, технологий и работодателя.</div>
+<button class="reset" onclick="resetPage()">← Проверить другую профессию</button>
+</div>
+</section>
+<footer>Will AI Replace Me? · Career AI Prototype</footer>
+</div>
+
+<script>
+const presets={
+"зубной техник":{p:42,r:"Среднее влияние",why:["цифровое моделирование","обработка сканов","создание шаблонов","часть расчётов"],human:["работа со сложными случаями","контроль качества","ручная корректировка","взаимодействие с врачом"],skills:["CAD/CAM","3D-моделирование","работа с материалами","контроль качества"],y:["ИИ уже помогает с цифровыми моделями.","Автоматизация части CAD/CAM-задач может вырасти.","Роль человека сместится к контролю, материалам и сложным случаям."]},
+"программист":{p:57,r:"Среднее влияние",why:["генерация кода","поиск ошибок","тесты","документация"],human:["архитектура","понимание продукта","проверка решений","командная работа"],skills:["системное мышление","AI-инструменты","архитектура","английский"],y:["AI уже ускоряет рутинную разработку.","Больше кода будет создаваться с помощью AI.","Главной ценностью станет проектирование и проверка систем."]},
+"врач":{p:28,r:"Низкое–среднее",why:["анализ данных","поиск закономерностей","документация","поддержка решений"],human:["общение с пациентом","осмотр","процедуры","ответственность"],skills:["критическое мышление","коммуникация","цифровая медицина","специализация"],y:["AI помогает анализировать информацию.","Инструменты поддержки решений станут привычнее.","Физическая работа и ответственность останутся важными."]},
+"дизайнер":{p:64,r:"Среднее–высокое",why:["варианты концепций","обработка изображений","черновики","генерация идей"],human:["понимание задачи","арт-дирекция","вкус и контекст","финальный контроль"],skills:["арт-дирекция","брендинг","3D","AI-инструменты"],y:["Генерация вариантов уже ускоряет работу.","Рутинная часть производства будет сильнее автоматизироваться.","Возрастёт роль концепции, вкуса и контроля результата."]},
+"учитель":{p:22,r:"Низкое влияние",why:["подготовка упражнений","черновики материалов","объяснение тем","проверка типовых заданий"],human:["мотивация","общение","управление классом","индивидуальная поддержка"],skills:["коммуникация","педагогика","AI-грамотность","психология обучения"],y:["AI помогает готовить материалы.","Он станет дополнительным помощником учителя.","Человеческое общение и мотивация останутся ключевыми."]}
+};
+function generic(s){
+  const n=20+([...s].reduce((a,c)=>a+c.charCodeAt(0),0)%61);
+
+  const groups = [
+    {
+      words:["програм","разработ","код","software","it"],
+      ai:["написание типового кода","поиск и исправление ошибок","создание тестов","документация"],
+      human:["архитектура сложных систем","понимание продукта","проверка результата","работа с командой"],
+      skills:["системное мышление","AI-инструменты","архитектура","английский"],
+      y:["AI уже ускоряет написание кода.","Рутинных задач в разработке может стать меньше.","Главными станут проектирование, проверка и ответственность за результат."]
+    },
+    {
+      words:["врач","доктор","медицин","хирург","стоматолог","медсест"],
+      ai:["анализ медицинских данных","поиск закономерностей","подготовка документации","поддержка диагностики"],
+      human:["осмотр пациента","процедуры","общение","ответственность за решения"],
+      skills:["коммуникация","критическое мышление","цифровая медицина","специализация"],
+      y:["AI уже помогает анализировать медицинскую информацию.","Диагностические инструменты будут развиваться.","Физическая работа и ответственность останутся особенно важными."]
+    },
+    {
+      words:["дизайн","дизайнер","график","иллюст","монтаж","видеограф","3d","модельер"],
+      ai:["создание вариантов","обработка изображений","генерация черновиков","поиск визуальных идей"],
+      human:["понимание задачи клиента","арт-дирекция","вкус и контекст","финальный контроль"],
+      skills:["арт-дирекция","визуальное мышление","AI-инструменты","брендинг"],
+      y:["Генеративный AI уже ускоряет создание контента.","Рутинное производство может автоматизироваться быстрее.","Концепция, стиль и контроль результата останутся важными."]
+    },
+    {
+      words:["учитель","преподав","тренер","репетитор"],
+      ai:["создание упражнений","подготовка материалов","объяснение типовых тем","проверка простых заданий"],
+      human:["мотивация","общение","управление группой","индивидуальная поддержка"],
+      skills:["коммуникация","педагогика","AI-грамотность","психология обучения"],
+      y:["AI уже помогает создавать учебные материалы.","Персональные AI-помощники будут становиться доступнее.","Роль человека останется важной в мотивации и работе с учениками."]
+    },
+    {
+      words:["юрист","адвокат","нотариус","юриспруд"],
+      ai:["поиск документов","анализ типовых договоров","составление черновиков","поиск правовой информации"],
+      human:["стратегия дела","переговоры","ответственность","сложные правовые решения"],
+      skills:["правовое мышление","переговоры","AI-инструменты","проверка источников"],
+      y:["AI уже ускоряет поиск и обработку документов.","Типовые юридические задачи могут автоматизироваться.","Сложные решения, переговоры и ответственность останутся важными."]
+    },
+    {
+      words:["бухгалтер","финанс","экономист","аналитик"],
+      ai:["обработка таблиц","поиск закономерностей","создание отчётов","расчёты"],
+      human:["проверка данных","финансовые решения","ответственность","работа с нестандартными ситуациями"],
+      skills:["аналитика","финансовая грамотность","AI-инструменты","критическое мышление"],
+      y:["AI уже хорошо работает с таблицами и отчётами.","Рутинные расчёты будут автоматизироваться.","Человеку останутся контроль, интерпретация и принятие решений."]
+    },
+    {
+      words:["зубной техник","стоматологический техник"],
+      ai:["цифровое моделирование","обработка 3D-сканов","проектирование конструкций","часть расчётов"],
+      human:["сложные случаи","контроль качества","ручная корректировка","работа с материалами"],
+      skills:["CAD/CAM","3D-моделирование","материалы","контроль качества"],
+      y:["Цифровые инструменты уже помогают в моделировании.","CAD/CAM может автоматизировать больше рутинных операций.","Человеку останутся контроль, материалы и сложные индивидуальные случаи."]
+    }
+  ];
+
+  const sLow=s.toLowerCase();
+  let g=groups.find(x=>x.words.some(w=>sLow.includes(w)));
+
+  if(!g){
+    g={
+      ai:["обработка профессиональной информации","автоматизация повторяющихся задач","подготовка черновиков","поиск и анализ данных"],
+      human:["контроль результата","ответственность за решения","нестандартные ситуации","общение и взаимодействие с людьми"],
+      skills:["AI-грамотность","критическое мышление","коммуникация","глубокая специализация"],
+      y:["AI уже автоматизирует отдельные задачи во многих профессиях.","Количество AI-инструментов, вероятно, будет расти.","Сильнее всего будут меняться повторяющиеся и цифровые задачи."]
+    };
+  }
+
+  return {
+    p:n,
+    r:n<35?"Низкое влияние":n<65?"Среднее влияние":"Высокое влияние",
+    why:g.ai,
+    human:g.human,
+    skills:g.skills,
+    y:g.y
+  };
+}
+function tryJob(x){document.getElementById("job").value=x;analyze()}
+function analyze(){
+let s=document.getElementById("job").value.trim();if(!s)return;
+document.getElementById("result").style.display="none";document.getElementById("loading").style.display="block";
+setTimeout(()=>{
+let d=presets[s.toLowerCase()]||generic(s);
+document.getElementById("loading").style.display="none";document.getElementById("result").style.display="block";
+document.getElementById("name").textContent=s;document.getElementById("pct").textContent=d.p+"%";document.getElementById("risk").textContent=d.r;
+document.getElementById("ai").innerHTML=d.why.map(x=>"<li>"+x+"</li>").join("");
+document.getElementById("human").innerHTML=d.human.map(x=>"<li>"+x+"</li>").join("");
+document.getElementById("skills").innerHTML=d.skills.map(x=>'<span class="skill">'+x+"</span>").join("");
+document.getElementById("y26").textContent=d.y[0];document.getElementById("y30").textContent=d.y[1];document.getElementById("y35").textContent=d.y[2];
+document.getElementById("fill").style.width=d.p+"%";document.getElementById("result").scrollIntoView({behavior:"smooth"});
+},650)
+}
+function resetPage(){document.getElementById("result").style.display="none";document.getElementById("job").value="";document.getElementById("job").focus()}
+document.getElementById("job").addEventListener("keydown",e=>{if(e.key==="Enter")analyze()})
+</script>
+</body>
+</html>
