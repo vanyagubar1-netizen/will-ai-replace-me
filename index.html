@@ -94,37 +94,21 @@ async function analyze() {
     loading.style.display = 'block';
     result.style.display = 'none';
 
-    const promptText = `Проанализируй профессию "\${jobInput}". Ответ верни СТРОГО в формате JSON без разметки markdown и без каких-либо дополнительных символов вроде \`\`\`json. Структура ответа должна быть точно такой:
-    {
-      "p": 45,
-      "r": "Среднее влияние",
-      "y26": "Подробный русский текст прогноза влияния ИИ на эту профессию к 2026 году.",
-      "y30": "Подробный русский текст прогноза влияния ИИ на эту профессию к 2030 году.",
-      "y35": "Подробный русский текст прогноза влияния ИИ на эту профессию к 2035 году.",
-      "why": ["русская задача ИИ 1", "русская задача ИИ 2", "русская задача ИИ 3", "русская задача ИИ 4"],
-      "human": ["русская задача человека 1", "русская задача человека 2", "русская задача человека 3", "русская задача человека 4"],
-      "skills": ["русский навык 1", "русский навык 2", "русский навык 3", "русский навык 4"]
-    }`;
-
     try {
-        // Мы отправляем запрос к бесплатному прокси, который безопасно прокинет ключ GEMINI_API_KEY со стороны Vercel
-        const response = await fetch('https://googleapis.com', {
+        // Запрос идет на наш внутренний прокси /api/analyze
+        const response = await fetch('/api/analyze', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: promptText }] }],
-                generationConfig: {
-                    responseMimeType: "application/json"
-                }
-            })
+            body: JSON.stringify({ profession: jobInput })
         });
 
-        const resData = await response.json();
-        let aiText = resData.candidates.content.parts.text.trim();
-        
-        const data = JSON.parse(aiText);
+        if (!response.ok) {
+            throw new Error('Ошибка бэкенда Vercel');
+        }
+
+        const data = await response.json();
 
         document.getElementById('name').innerText = jobInput;
         document.getElementById('pct').innerText = data.p + '%';
@@ -147,11 +131,10 @@ async function analyze() {
         loading.style.display = 'none';
         result.style.display = 'block';
     } catch (error) {
-        alert('Для завершения настройки перейдите в Vercel и нажмите Redeploy, чтобы применить бесплатный ключ.');
+        alert('Ошибка при связи с сервером. Пожалуйста, сделайте Redeploy в панели Vercel.');
         loading.style.display = 'none';
     }
 }
 </script>
 </body>
 </html>
-Ыы
